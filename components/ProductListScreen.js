@@ -29,7 +29,6 @@ const ProductListScreen = () => {
     await fetchProducts();
     setRefreshing(false);
   };
-
   const formatRupiah = (nominal) => {
     return `Rp ${nominal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
   };
@@ -47,7 +46,7 @@ const ProductListScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.head}>Daftar Produk</Text>
+        <Text style={styles.head}>Daftar Produk</Text>
       <FlatList
         data={products}
         renderItem={renderProductItem}
@@ -85,36 +84,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 5,
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 2,
     marginBottom: 10,
     marginLeft: 5,
     marginRight: 5,
   },
   productImage: {
-    width: '100%',
-    height: 150,
-    borderRadius: 10,
+    width: 100,
+    height: 100,
     marginBottom: 10,
+    borderRadius: 5,
   },
   productName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     textAlign: 'center',
-    color: '#333',
   },
   productPrice: {
-    fontSize: 16,
-    color: '#e91e63',
+    fontSize: 14,
+    color: '#888',
     marginTop: 5,
   },
   head: {
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
-    padding: 10,
-    color: '#333',
+    padding: 10
   },
 });
 
