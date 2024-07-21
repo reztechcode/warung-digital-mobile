@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, Image, StyleSheet, ActivityIndicator, ScrollView, TouchableOpacity, Linking, Alert } from 'react-native';
 import axios from 'axios';
+import { useNavigation } from '@react-navigation/native';
 
 const ProductDetailScreen = ({ route }) => {
   const { productId } = route.params;
-  
+  const navigation = useNavigation();
+
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const baseUrl = 'https://warung.rezweb.my.id/api/produk';
@@ -25,6 +27,26 @@ const ProductDetailScreen = ({ route }) => {
     }
   };
 
+  const formatRupiah = (nominal) => {
+    return `Rp ${nominal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+  };
+
+  const handleBuyNow = () => {
+    const phoneNumber = '628123456789';
+    const message = `Halo, saya tertarik untuk membeli produk "${product.nama}" dengan harga Rp ${product.nominal}. Apakah produk ini masih tersedia?`;
+    const url = `whatsapp://send?text=${encodeURIComponent(message)}&phone=${phoneNumber}`;
+
+    Linking.canOpenURL(url)
+      .then((supported) => {
+        if (supported) {
+          Linking.openURL(url);
+        } else {
+          Alert.alert('Error', 'Tidak dapat membuka WhatsApp');
+        }
+      })
+      .catch((err) => console.error('Error opening WhatsApp:', err));
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -34,56 +56,89 @@ const ProductDetailScreen = ({ route }) => {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.head}>Detail Produk</Text>
-      <Text style={styles.productName}>{product.nama}</Text>
-      <Image source={{ uri: baseImageUrl + product.gambar }} style={styles.productImage} />
-      <Text style={styles.productPrice}>Rp {product.nominal}</Text>
-      <Text style={styles.productDescription}>{product.deskripsi}</Text>
-    </View>
+    <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+      <View style={styles.container}>
+        <Image source={{ uri: baseImageUrl + product.gambar }} style={styles.headerImage} />
+        <View style={styles.productInfoContainer}>
+          <Text style={styles.productName}>{product.nama}</Text>
+          <Text style={styles.productPrice}>{formatRupiah(product.nominal)}</Text>
+          <Text style={styles.productDescription}>{product.deskripsi}</Text>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.whatsappButton} onPress={handleBuyNow}>
+              <Text style={styles.buttonText}>WhatsApp</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
+  scrollViewContainer: {
+    flexGrow: 1,
+    backgroundColor: '#f8f8f8',
     alignItems: 'center',
     padding: 10,
+  },
+  container: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
+    marginBottom: 20,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  productImage: {
-    width: 300,
-    height: 200,
-    marginBottom: 20,
-    borderRadius: 10,
+  headerImage: {
+    width: '100%',
+    height: 250,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  productInfoContainer: {
+    padding: 20,
   },
   productName: {
     fontSize: 24,
     fontWeight: 'bold',
-    textAlign: 'center',
+    color: '#333',
     marginBottom: 10,
   },
   productPrice: {
-    fontSize: 20,
-    color: '#888',
-    textAlign: 'center',
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#e91e63',
     marginBottom: 10,
   },
   productDescription: {
     fontSize: 16,
-    textAlign: 'center',
-    marginTop: 10,
+    color: '#666',
+    marginBottom: 20,
   },
-  head: {
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  whatsappButton: {
+    backgroundColor: '#25D366',
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 10,
+  },
+  buttonText: {
     fontSize: 18,
+    color: '#fff',
     fontWeight: 'bold',
-    textAlign: 'center',
-    padding: 13
   },
 });
 
