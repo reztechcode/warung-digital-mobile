@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, RefreshControl, TouchableOpacity, Dimensions } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
+import { useSelector, useDispatch } from 'react-redux';
+import { setProducts, setRefreshing } from './store';
 
 const ProductListScreen = () => {
-  const [products, setProducts] = useState([]);
-  const [refreshing, setRefreshing] = useState(false);
+  const products = useSelector((state) => state.products.data);
+  const refreshing = useSelector((state) => state.products.refreshing);
+  const dispatch = useDispatch();
   const baseUrl = 'https://warung.rezweb.my.id/api/produk';
   const baseImageUrl = 'https://warung.rezweb.my.id/storage/';
   const screenWidth = Dimensions.get('window').width;
@@ -18,16 +21,16 @@ const ProductListScreen = () => {
   const fetchProducts = async () => {
     try {
       const response = await axios.get(baseUrl);
-      setProducts(response.data.data.data);
+      dispatch(setProducts(response.data.data.data));
     } catch (error) {
       console.error('Error fetching products:', error);
     }
   };
 
   const onRefresh = async () => {
-    setRefreshing(true);
+    dispatch(setRefreshing(true));
     await fetchProducts();
-    setRefreshing(false);
+    dispatch(setRefreshing(false));
   };
 
   const formatRupiah = (nominal) => {
