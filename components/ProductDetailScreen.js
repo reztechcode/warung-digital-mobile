@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, Image, StyleSheet, ActivityIndicator, ScrollView, TouchableOpacity, Linking, Alert, RefreshControl } from 'react-native';
 import axios from 'axios';
 
 const ProductDetailScreen = ({ route }) => {
@@ -7,6 +7,8 @@ const ProductDetailScreen = ({ route }) => {
   
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
   const baseUrl = 'https://warung.rezweb.my.id/api/produk';
   const baseImageUrl = 'https://warung.rezweb.my.id/storage/';
 
@@ -16,13 +18,40 @@ const ProductDetailScreen = ({ route }) => {
 
   const fetchProductDetail = async () => {
     try {
+      setLoading(true);
       const response = await axios.get(`${baseUrl}/${productId}`);
       setProduct(response.data.data);
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching product detail:', error);
+    } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchProductDetail();
+  };
+
+  const formatRupiah = (nominal) => {
+    return `Rp ${nominal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+  };
+
+  const handleBuyNow = () => {
+    const phoneNumber = '628123456789';
+    const message = `Halo, saya tertarik untuk membeli produk "${product.nama}" dengan harga Rp ${product.nominal}. Apakah produk ini masih tersedia?`;
+    const url = `whatsapp://send?text=${encodeURIComponent(message)}&phone=${phoneNumber}`;
+
+    Linking.canOpenURL(url)
+      .then((supported) => {
+        if (supported) {
+          Linking.openURL(url);
+        } else {
+          Alert.alert('Error', 'Tidak dapat membuka WhatsApp');
+        }
+      })
+      .catch((err) => console.error('Error opening WhatsApp:', err));
   };
 
   if (loading) {
@@ -34,13 +63,29 @@ const ProductDetailScreen = ({ route }) => {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.head}>Detail Produk</Text>
-      <Text style={styles.productName}>{product.nama}</Text>
-      <Image source={{ uri: baseImageUrl + product.gambar }} style={styles.productImage} />
-      <Text style={styles.productPrice}>Rp {product.nominal}</Text>
-      <Text style={styles.productDescription}>{product.deskripsi}</Text>
-    </View>
+    <ScrollView
+      contentContainerStyle={styles.scrollViewContainer}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+        />
+      }
+    >
+      <View style={styles.container}>
+        <Image source={{ uri: baseImageUrl + product.gambar }} style={styles.headerImage} />
+        <View style={styles.productInfoContainer}>
+          <Text style={styles.productName}>{product.nama}</Text>
+          <Text style={styles.productPrice}>{formatRupiah(product.nominal)}</Text>
+          <Text style={styles.productDescription}>{product.deskripsi}</Text>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.whatsappButton} onPress={handleBuyNow}>
+              <Text style={styles.buttonText}>WhatsApp</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </ScrollView>
   );
 };
 
