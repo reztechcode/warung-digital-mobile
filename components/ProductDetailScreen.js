@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, ActivityIndicator, ScrollView, TouchableOpacity, Linking, Alert } from 'react-native';
+import { View, Text, Image, StyleSheet, ActivityIndicator, ScrollView, TouchableOpacity, Linking, Alert, RefreshControl } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 
@@ -9,6 +9,8 @@ const ProductDetailScreen = ({ route }) => {
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
   const baseUrl = 'https://warung.rezweb.my.id/api/produk';
   const baseImageUrl = 'https://warung.rezweb.my.id/storage/';
 
@@ -18,13 +20,20 @@ const ProductDetailScreen = ({ route }) => {
 
   const fetchProductDetail = async () => {
     try {
+      setLoading(true);
       const response = await axios.get(`${baseUrl}/${productId}`);
       setProduct(response.data.data);
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching product detail:', error);
+    } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchProductDetail();
   };
 
   const formatRupiah = (nominal) => {
@@ -56,7 +65,15 @@ const ProductDetailScreen = ({ route }) => {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+    <ScrollView
+      contentContainerStyle={styles.scrollViewContainer}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+        />
+      }
+    >
       <View style={styles.container}>
         <Image source={{ uri: baseImageUrl + product.gambar }} style={styles.headerImage} />
         <View style={styles.productInfoContainer}>
