@@ -9,8 +9,8 @@ const ProductDetailScreen = ({ route }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const baseUrl = 'https://warung.rezweb.my.id/api/produk';
-  const baseImageUrl = 'https://warung.rezweb.my.id/storage/';
+  const baseUrl = '';
+  const baseImageUrl = '';
 
   useEffect(() => {
     fetchProductDetail();

@@ -9,8 +9,8 @@ const ProductListScreen = () => {
   const products = useSelector((state) => state.products.data);
   const refreshing = useSelector((state) => state.products.refreshing);
   const dispatch = useDispatch();
-  const baseUrl = 'https://warung.rezweb.my.id/api/produk';
-  const baseImageUrl = 'https://warung.rezweb.my.id/storage/';
+  const baseUrl = '';
+  const baseImageUrl = '';
   const screenWidth = Dimensions.get('window').width;
   const navigation = useNavigation();
 
